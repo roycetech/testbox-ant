@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+
+ <project xmlns:au="antlib:org.apache.ant.antunit"
+          xmlns="antlib:org.apache.tools.ant" >
+
+ <target name="testCatchFailure">
+   <au:expectfailure message="haltOnFailure set to true. This should fail.">
+   <testboxtask server="localhost" port="8080"
+               outputdir="tests/results"
+               testResultsSummary="au.test.properties"
+               verbose="true"
+               haltonerror="true"
+               haltonfailure="true">
+     
+     <!-- failure not detected until all tests have been run. -->
+     <testcase name="mxunit.tests.framework.fixture.fixturetests.SomeRandomTest"  />
+   </testboxtask>
+    </au:expectfailure> 
+ </target>
+
+
+ <target name="setUp">
+   <!-- for log assertions -->
+  <au:logcontent level="verbose" />
+  <taskdef name="testboxtask" classname="testbox.ant.TestboxAntTask" classpath="../testbox-ant.jar"   />
+ </target>
+
+
+  <!-- clean up -->
+  <target name="tearDown">
+     <!-- clean up -->
+  </target>
+
+
+</project>

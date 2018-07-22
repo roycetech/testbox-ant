@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="TestboxTask" basedir="." default="main">
+
+    <target name="init">
+        <property file="buildprops/build.properties" />
+
+        <path id="project.class.path">
+            <fileset dir="lib">
+                <include name="**/*.jar" />
+            </fileset>
+        </path>
+    </target>
+
+    <target name="clean" description="Delete all generated files">
+        <delete dir="${testbox.jar}" failonerror="false" />
+    </target>
+
+    <target name="compile" description="Compiles the Task" depends="clean,init">
+        <mkdir dir="${classes.dir}" />
+        <javac verbose="true"
+               srcdir="${src.dir}"
+               destdir="${classes.dir}"
+               classpathref="project.class.path"
+               target="1.7"
+               source="1.7"
+               debug="true"
+               debuglevel="lines,vars,source" />
+    </target>
+
+    <target name="jar" description="JARs the Task" depends="compile">
+        <jar destfile="${testbox.jar}" basedir="${classes.dir}">
+             basedir="${classes.dir}">
+            <fileset dir="lib" excludes="*.jar" />
+        </jar>
+    </target>
+
+    <target name="testErr" depends="compile,jar">
+        <echo>Run</echo>
+        <taskdef name="testboxtask"
+                 classname="testbox.ant.TestboxAntTask"
+                 classpath="testbox-ant.jar" />
+        <testboxtask server="localhost"
+                     port="8080"
+                     verbose="true"
+                     errorProperty="my.err.prop"
+                     failureproperty="my.fail.prop">
+            <testcase name="mxunit.tests.samples.MyComponentTest" />
+        </testboxtask>
+        <echo>${my.fail.prop}</echo>
+
+        <testboxtask server="localhost"
+                     port="8080"
+                     verbose="true"
+                     errorProperty="my.err.prop"
+                     failureproperty="my.failure.prop">
+            <testcase name="mxunit.tests.framework.MyCFCTest" />
+        </testboxtask>
+        <echo>${my.failure.prop}</echo>
+    </target>
+
+    <target name="runTests"
+            description="Test the Testbox Task"
+            depends="compile,jar">
+        <echo>Running tests</echo>
+        <ant dir="tests" />
+    </target>
+
+    <target name="use" description="Use the Testbox Task" depends="jar">
+        <mkdir dir="${junit.out.dir.html}" />
+        <mkdir dir="${output.dir}" />
+
+        <taskdef name="testboxtask"
+                 classname="testbox.ant.TestboxAntTask"
+                 classpath="${testbox.jar}" />
+        <testboxtask server="localhost"
+                     port="8080"
+                     defaultrunner=""
+                     outputdir="${output.dir}"
+                     verbose="true"
+                     testResultsSummary="${testrestults.summary}"
+                     haltonerror="true"
+                     haltonfailure="false">
+            <directory remoteMethod="run"
+                       path="${component.path}\mxunit\tests\framework"
+                       packageName="mxunit.tests.framework"
+                       recurse="false"
+                       excludes="" />
+            <directory runner="/mxunit/runner/HttpAntRunner.cfc"
+                       remoteMethod="run"
+                       path="${component.path}\mxunit\tests\runner"
+                       packageName="mxunit.tests.runner"
+                       recurse="false"
+                       excludes="" />
+        </testboxtask>
+    </target>
+
+    <target name="main" depends="runTests" />
+
+    <target name="junitreport"
+            depends="use"
+            description="Create a report for the rest result">
+        <property file="${output.dir}/${testrestults.summary}" />
+        <echoproperties />
+        <mkdir dir="${junit.out.dir.html}" />
+        <junitreport todir="${junit.out.dir.html}">
+            <fileset dir="${output.dir}">
+                <include name="*.xml" />
+            </fileset>
+            <report format="frames"
+                    todir="${junit.out.dir.html}"
+                    styledir="${style.dir}" />
+        </junitreport>
+    </target>
+</project>
