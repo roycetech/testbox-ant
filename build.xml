@@ -29,7 +29,6 @@
 
     <target name="jar" description="JARs the Task" depends="compile">
         <jar destfile="${testbox.jar}" basedir="${classes.dir}">
-             basedir="${classes.dir}">
             <fileset dir="lib" excludes="*.jar" />
         </jar>
     </target>

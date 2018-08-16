@@ -48,13 +48,14 @@ class HtmlResultParser {
         this.totalTestRuns = 0;
         matcher.find();
         this.totalTestRuns += Integer.parseInt(matcher.group(1));
-        matcher.find();
-        this.totalErrors = Integer.parseInt(matcher.group(1));
-        this.totalTestRuns += this.totalErrors;
 
         matcher.find();
         this.totalFailures = Integer.parseInt(matcher.group(1));
         this.totalTestRuns += this.totalFailures;
+
+        matcher.find();
+        this.totalErrors = Integer.parseInt(matcher.group(1));
+        this.totalTestRuns += this.totalErrors;
     }
 
     /**
