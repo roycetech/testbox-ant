@@ -19,19 +19,22 @@ class HtmlResultParser {
 
     public static void main(final String[] args) throws Exception
     {
+        final HtmlResultParser parser = new HtmlResultParser();
         System.out.println(
-            new HtmlResultParser().parse(
-                "http://localhost:8080/ecgateway/_tests/testbox/unit/utils/ListUtilTest.cfc"));
+            parser.parse(
+                "http://localhost:8080/ecgateway/_tests/unit/utils/ListUtilSpec.cfc"));
+
+        System.out.println(parser.getSummary());
     }
 
-    private transient int totalTestRuns = 0;
+    private transient int totalTestRuns = 1;
     private transient int totalFailures = 0;
-    private transient int totalErrors = 0;
+    private transient int totalErrors = 1;
     private transient int totalTime = 0;
 
     private transient String responseBody;
 
-    private transient String summary = "0,0,0,0";
+    private transient String summary = "1,0,1,0";
 
     /**
      * @param summary in the format: 'Pass: 3 Fail: 0 Errors: 0'
@@ -71,7 +74,7 @@ class HtmlResultParser {
         final Pattern pattern = Pattern.compile("(\\d+)(?= ms)");
         final Matcher matcher = pattern.matcher(timeText);
 
-        if (matcher.find()) {
+        if (matcher.find(0)) {
             this.totalTime = Integer.parseInt(matcher.group(1));
         }
     }
@@ -84,11 +87,9 @@ class HtmlResultParser {
      */
     private void generateSummary(final Document doc)
     {
-        if (this.totalErrors + this.totalFailures > 0) {
-            this.summary =
-                    String.valueOf(getTotalTestRuns()) + ',' + getTotalErrors()
-                            + ',' + getTotalFailures() + ',' + getTotalTime();
-        }
+        this.summary =
+                String.valueOf(getTotalTestRuns()) + ',' + getTotalErrors()
+                        + ',' + getTotalFailures() + ',' + getTotalTime();
     }
 
     public double getErrorRatio()
@@ -177,12 +178,15 @@ class HtmlResultParser {
     {
         final Document doc;
         final Connection connection = Jsoup.connect(url);
-        doc = connection.timeout(0).get();
-        computeTotal(doc);
-        generateSummary(doc);
-        extractTestTime(doc);
-
+        doc = connection.ignoreHttpErrors(true).timeout(0).get();
         this.responseBody = doc.html().trim();
+
+        final int httpStatus = connection.response().statusCode();
+        if (httpStatus < 400) {
+            computeTotal(doc);
+            extractTestTime(doc);
+            generateSummary(doc);
+        }
         return connection.response().statusCode();
     }
 

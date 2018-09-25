@@ -232,7 +232,7 @@ public class TestboxAntTask extends Task {
             log("Loading Testcase : " + test.getName());
 
             final String outputFile =
-                    this.outputdir + "/testboxtestcase_" + i + ".xml";
+                    this.outputdir + "/testboxtestcase_" + i + ".html";
 
             log("Output file: " + outputFile);
 
